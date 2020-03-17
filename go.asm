@@ -74,6 +74,55 @@ mostrarTablero macro tablero
    mostrar cabeceraX
 endm
 
+;##############################################################################
+;########################## CONTROL MOVIMIENTO              ###################
+;##############################################################################
+controlMovimiento macro posX,posY
+   mov bl,posX
+   sub bl,17 ; Lo pasamos a numero
+   mov bh,0d ; limpimos los bits mas significativos
+
+   mov cl,posY
+   
+   ; X >= 0
+   cmp bl,48d 
+   jge l0
+   jmp l1
+
+   ; X <= 8
+   l0:
+   cmp bl,56d
+   jle l2
+   jmp l3
+
+   ;Falsa
+   l1:
+   l3:
+   mostrar errorPosicion
+   jmp l4
+
+   ;Verdadera
+   l2:
+      ; Y >= 0
+      cmp cl,48d
+      jge l5
+      jmp l1
+
+      ; Y <= 8
+      l5:
+      cmp cl,56d
+      jle l6
+      jmp l1 
+
+      l6:
+      mostrarCaracter bl 
+      mostrarCaracter cl
+
+
+   l4:
+
+endm
+
 .model small
 .stack
 .data
@@ -85,7 +134,10 @@ endm
 
    despedida db 10,"Saliendo del juego...","$"
 
-   suerte db 10,"Gambete..$"
+   suerte db 10,"Ganbatte...$"
+
+
+   errorPosicion db 10, "Posicion Incorrecta :(",10,"$"
 
    separacion db "---$"
    separacionFilas db "  *     *     *     *     *     *     *     *",10,"$"
@@ -96,6 +148,11 @@ endm
    ;-------------------------------------------- TABLERO ---------------------------------------------------------------------
    tablero db 16,16
    turno db ?
+   coorX db ?
+   coorY db ?
+
+   ;------------------------------------------- INSTRUCCIONES ----------------------------------------------------------------
+   instruccion db 6 DUP("$")
  
 .code
  
@@ -118,22 +175,41 @@ inicio:
    je cargar
    
    jmp salida
+   
+   
+   ;#################################################################################################################################
+   ;#########################################################JUGAR###################################################################
+   ;#################################################################################################################################
    jugar:
    mov turno,0d ; Negras Inician 0 -> Negras, 1 -> Blancas
 
    
-  
+   ;----------------------------------------------- Mostrar Tablero -------------------------------------------------
    mostrar suerte
    mostrarTablero tablero
    mostrarCaracter 10
-   
+   ;------------------------------------------------- Mostrar Turno Actual -----------------------------------------
    cmp turno,0d
    je tNegra 
    mostrar turnoBlanca
    jmp salida
    tNegra: 
    mostrar turnoNegra
-   
+   ;-------------------------------------------------- ENTRADA ------------------------------------------------------
+   lea SI,instruccion              ; el indice del stack apuntara a la direccion de frase
+
+   mov dx,SI                 ; dx apunta al si
+   mov ah,0AH                ; interrupcion para obtener algo de consola
+   int 21h
+
+   ;--------------------------------- Comando Exit -------------------------------------------------
+   cmp dx,"EXIT"
+   je salida
+   ;--------------------------------- Coordernadas --------------------------------------------------
+   mostrarCaracter 10
+   controlMovimiento [SI + 2],[si + 3]
+
+
    jmp salida
 
 

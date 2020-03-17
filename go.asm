@@ -1,22 +1,31 @@
+mostrar macro mensaje
+  mov ah,09h
+  mov dx, offset mensaje
+  int 21h   
+endm
+
+
+
+
 .model small
 .stack
 .data
-   saludo   db "Hola mundo!!!", "$"
+   cabecera   db "Universidad de San Carlos de Guatemala",10,"Facultad de Ingenieria",10,"Ciencias y Sistemas",10,
+   "Arquitectura de computadores y ensambladores 1",10,"Carlos Eduardo Hernandez Molina",10,"201612118",10,"Seccion: A",10,"$"
+   
+   opciones db 10,10,"1) Iniciar Juego",10,"2) Cargar Juego",10,"3) Salir",10,"$"
  
 .code
  
-main  proc              ;Inicia proceso
-   mov   ax,seg saludo     ;hmm ¿seg?
-   mov   ds,ax          ;ds = ax = saludo
+inicio:
+   mov ax,@data
+   mov ds,ax
+   mov dx,ax
+   mostrar cabecera
+   mostrar opciones
+
  
-   mov   ah,09          ;Function(print string)
-   lea   dx,saludo         ;DX = String terminated by "$"
-   int   21h               ;Interruptions DOS Functions
+   mov   ax,4c00h       
+   int   21h            
  
-;mensaje en pantalla
- 
-   mov   ax,4c00h       ;Function (Quit with exit code (EXIT))
-   int   21h            ;Interruption DOS Functions
- 
-main  endp              ;Termina proceso
-end main
+end 

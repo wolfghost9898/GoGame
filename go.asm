@@ -53,14 +53,40 @@ mostrarTablero macro tablero
          ; For para X
          mov cx,0d
          recursividadX:
-            cmp cx,6d 
+            cmp cx,7d 
             jg finX
             
+            
+            mov temp,bx 
+            mov temp2,cx 
+            
+            ;sub bx,1d
+            mov cx,bx 
+            mov bx,temp2
+            mapeoLexico
+            
+            cmp tablero[bx],2d
+            je posNegra
+            cmp tablero[bx],3d
+            je posBlanca
+            mostrarCaracter 32
+            jmp l14
+            posNegra:
+            mostrarCaracter 'F'
+            mostrarCaracter 'N'
+            jmp l14 
+            posBlanca:
+            mostrarCaracter 'F'
+            mostrarCaracter 'B' 
+            jmp l14
+            
+            
+            l14:
+            mostrarCaracter 32
             mostrar separacion 
             mostrarCaracter 32
-            mostrarCaracter 32
-            mostrarCaracter 32
-
+            mov bx,temp
+            mov cx,temp2
             inc cx
             jmp recursividadX
          finX:
@@ -79,7 +105,7 @@ endm
 ;##############################################################################
 controlMovimiento macro posX,posY
    mov bl,posX
-   sub bl,17 ; Lo pasamos a numero
+   sub bl,17d ; Lo pasamos a numero
    mov bh,0d ; limpimos los bits mas significativos
 
    mov cl,posY
@@ -115,11 +141,92 @@ controlMovimiento macro posX,posY
       jmp l1 
 
       l6:
-      mostrarCaracter bl 
-      mostrarCaracter cl
+      
+      sub bl,48d
+      sub cl,48d
+      mov bh,0d 
+      mov ch,0d
 
+      mapeoLexico
+      cmp turno,0d
+      je tNegro 
+      mov tablero[bx],3d
+      jmp salirTurno 
+      tNegro:
+      mov tablero[bx],2d
+      
+      salirTurno:
+      
+      
 
    l4:
+   cambiarTurno
+
+endm
+;##############################################################################
+;########################## VERIFICAR SI ES EXIT            ###################
+;##############################################################################
+mapeoLexico macro 
+   xor AX,AX
+   mov AX,CX
+   mov CX,8d
+   mul CX
+   add AX,BX
+   mov CX,2d
+   mul CX
+   
+   mov BX,AX
+   
+endm
+
+;##############################################################################
+;########################## CAMBIAR TURNO             ###################
+;##############################################################################
+cambiarTurno macro 
+   cmp turno,0d
+   je l7 
+   mov turno,0d
+   jmp l8
+   
+   l7:
+   mov turno,1d
+
+   l8:
+endm
+
+;##############################################################################
+;########################## VERIFICAR SI ES EXIT            ###################
+;##############################################################################
+isExit macro palabra
+   mov dl, [SI + 0]
+   cmp dl,'E'
+   je l9
+   jmp l10 
+   
+   l9:
+   mov dl, [SI + 1]
+   cmp dl,'X'
+   je l11
+   jmp l10
+
+   l11:
+   mov dl, [SI + 2]
+   cmp dl,'I'
+   je l12
+   jmp l10 
+
+   l12:
+   mov dl, [SI + 3]
+   cmp dl,'T'
+   jne l10 
+
+   mov bx,1d 
+   jmp l13
+
+   
+   l10:
+      mov bx,0d 
+   l13:
 
 endm
 
@@ -140,20 +247,24 @@ endm
    errorPosicion db 10, "Posicion Incorrecta :(",10,"$"
 
    separacion db "---$"
-   separacionFilas db "  *     *     *     *     *     *     *     *",10,"$"
-   cabeceraX db "  A     B     C     D     E     F     G     H ",10,"$"
+   separacionFilas db "    *     *     *     *     *     *     *     *",10,"$"
+   cabeceraX db "    A     B     C     D     E     F     G     H ",10,"$"
 
    turnoNegra db 10,"Turno Negra: $"
    turnoBlanca db 10,"Turno Blanca: $"
    ;-------------------------------------------- TABLERO ---------------------------------------------------------------------
-   tablero db 16,16
+   tablero dW 32 
    turno db ?
    coorX db ?
    coorY db ?
 
    ;------------------------------------------- INSTRUCCIONES ----------------------------------------------------------------
-   instruccion db 6 DUP("$")
- 
+   instruccion db 4 DUP("$")
+   
+
+   ;---------------------------------------- OTROS-----------------------------------------------------------------------
+   temp dw ?
+   temp2 dw ?
 .code
  
 inicio:
@@ -165,7 +276,7 @@ inicio:
    mostrar opciones
    ; Pedir una opcion
    ;ingresarCaracter
-   
+   mov turno,0d ; Negras Inician 0 -> Negras, 1 -> Blancas
    mov bl,'1'
    ; switch para las opciones
    cmp bl,'1'
@@ -181,7 +292,7 @@ inicio:
    ;#########################################################JUGAR###################################################################
    ;#################################################################################################################################
    jugar:
-   mov turno,0d ; Negras Inician 0 -> Negras, 1 -> Blancas
+  
 
    
    ;----------------------------------------------- Mostrar Tablero -------------------------------------------------
@@ -192,9 +303,12 @@ inicio:
    cmp turno,0d
    je tNegra 
    mostrar turnoBlanca
-   jmp salida
+   jmp empezar
    tNegra: 
    mostrar turnoNegra
+   
+   empezar:
+   
    ;-------------------------------------------------- ENTRADA ------------------------------------------------------
    lea SI,instruccion              ; el indice del stack apuntara a la direccion de frase
 
@@ -202,15 +316,19 @@ inicio:
    mov ah,0AH                ; interrupcion para obtener algo de consola
    int 21h
 
+   lea SI, instruccion + 2
+   isExit instruccion + 2
    ;--------------------------------- Comando Exit -------------------------------------------------
-   cmp dx,"EXIT"
+   cmp bx,1d
    je salida
+   
+   xor bx,bx
    ;--------------------------------- Coordernadas --------------------------------------------------
    mostrarCaracter 10
-   controlMovimiento [SI + 2],[si + 3]
+   controlMovimiento [SI + 0],[si + 1]
 
 
-   jmp salida
+   jmp jugar
 
 
    cargar:
@@ -222,4 +340,9 @@ inicio:
    mov   ax,4c00h       
    int   21h            
  
+
+
+
+
+
 end 

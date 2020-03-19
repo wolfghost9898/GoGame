@@ -150,17 +150,38 @@ controlMovimiento macro posX,posY
       mov ch,0d
 
       mapeoLexico
+      
+      cmp tablero[bx],2d
+      je eExiste
+      cmp tablero[bx],3d
+      je eExiste
+      
+      
+      
+      
       cmp turno,0d
       je tNegro 
       mov tablero[bx],3d
       jmp salirTurno 
+      
+      
+
       tNegro:
       mov tablero[bx],2d
       xor bx,bx 
       mov bx,3d ; Todo bien todo correcto 
-      cambiarTurno
-      salirTurno:
       
+      jmp salirTurno
+
+      eExiste:
+      mostrar exitePosicion
+      xor bx,bx 
+      mov bx,2d ; Error
+      jmp l4
+
+
+      salirTurno:
+      cambiarTurno
       
 
    l4:
@@ -256,6 +277,8 @@ endm
 
    turnoNegra db 10,"Turno Negra: $"
    turnoBlanca db 10,"Turno Blanca: $"
+
+   exitePosicion db 10,"Ya existe una ficha en esa posicion",10,"$"
    ;-------------------------------------------- TABLERO ---------------------------------------------------------------------
    tablero dw 32 
    turno db ?

@@ -125,6 +125,8 @@ controlMovimiento macro posX,posY
    l1:
    l3:
    mostrar errorPosicion
+   xor bx,bx 
+   mov bx,2d ; Error
    jmp l4
 
    ;Verdadera
@@ -154,13 +156,15 @@ controlMovimiento macro posX,posY
       jmp salirTurno 
       tNegro:
       mov tablero[bx],2d
-      
+      xor bx,bx 
+      mov bx,3d ; Todo bien todo correcto 
+      cambiarTurno
       salirTurno:
       
       
 
    l4:
-   cambiarTurno
+   
 
 endm
 ;##############################################################################
@@ -253,7 +257,7 @@ endm
    turnoNegra db 10,"Turno Negra: $"
    turnoBlanca db 10,"Turno Blanca: $"
    ;-------------------------------------------- TABLERO ---------------------------------------------------------------------
-   tablero dW 32 
+   tablero dw 32 
    turno db ?
    coorX db ?
    coorY db ?
@@ -298,6 +302,9 @@ inicio:
    ;----------------------------------------------- Mostrar Tablero -------------------------------------------------
    mostrar suerte
    mostrarTablero tablero
+   
+   
+   recursividadJuego:
    mostrarCaracter 10
    ;------------------------------------------------- Mostrar Turno Actual -----------------------------------------
    cmp turno,0d
@@ -326,7 +333,9 @@ inicio:
    ;--------------------------------- Coordernadas --------------------------------------------------
    mostrarCaracter 10
    controlMovimiento [SI + 0],[si + 1]
-
+   
+   cmp bx,2d 
+   je recursividadJuego
 
    jmp jugar
 

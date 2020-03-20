@@ -294,13 +294,62 @@ isSave macro palabra
 endm 
 
 ;##############################################################################
-;########################## MACRO PARA CREAR EL ARCHIVO         ###################
+;########################## MACRO PARA ESCRIBIR EN EL ARCHIVO ###################
 ;##############################################################################
-crearArchivo macro
- 
+escribirArchivo macro 
+   mov ah,40h
+   mov al,02H
+   mov bx,[filehandle]
+   mov cx,1
+   mov dx,offset cadena
+   int 21h
  
 endm
 
+;##############################################################################
+;########################## GUARDAR EL ESTADO ###################
+;##############################################################################
+guardarEstado macro
+   xor bx,bx
+   l21:
+      
+      cmp bx,32d  ; si es mayor a 16 nos salimos del loop
+      jge l22
+      mov temp,bx
+      
+      cmp tablero[bx],2d
+      je l23
+      cmp tablero[bx],3d
+      je l24
+      mov cadena,48
+      jmp l25
+      l23:
+         mov cadena,50
+         jmp l25
+      l24:
+         mov cadena,51
+         jmp l25
+
+      l25:
+         escribirArchivo
+      mov bx,temp
+      
+      inc bx
+      inc bx
+      jmp l21
+
+   l22: 
+endm
+
+
+;##############################################################################
+;########################## CERRAR ARCHIVO ###################
+;##############################################################################
+cerrarArchivo macro
+   mov ah,3Eh
+   mov bx,[filehandle]
+   int 21h
+endm
 .model small
 .stack
 .data
@@ -337,9 +386,12 @@ endm
    ;----------------------------------------------------- ARCHIVO --------------------------------------------------------------
    ingresarArchivo db 10,"Ingrese el nombre del archivo: $";
    nombreArchivo db 13,0,13 dup("$")
-   creadoExito db 10,"Se ha guardado la partida exitosamente$"
+   creadoExito db 10,"Se ha creado el archivo$"
    creadoFallido db 10,"No se ha podido guardar la partida$"
-
+   partidaGuardara db 10,"Se ha guardado la partida$"
+   filehandle dw 0
+   cadena db 2 DUP("$")
+   ;------------------------------------------------------ HTML ----------------------------------------------------------------
    
    ;---------------------------------------- OTROS-----------------------------------------------------------------------
    temp dw ?
@@ -447,13 +499,17 @@ inicio:
       mov cx,00000000b
       lea dx,[nombreArchivo + 2]
       int 21h
+      mov [filehandle],ax 
       jnc creadoE 
       mostrar creadoFallido
       jmp jugar
     
       creadoE:
-        mostrar creadoExito
-        jmp jugar
+         mostrar creadoExito
+         guardarEstado
+         mostrar partidaGuardara
+         cerrarArchivo
+         jmp jugar
 
 
 

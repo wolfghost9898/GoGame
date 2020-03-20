@@ -255,6 +255,52 @@ isExit macro palabra
 
 endm
 
+;##############################################################################
+;########################## COMANDO SAVE            ###################
+;##############################################################################
+isSave macro palabra
+   mov dl, [SI + 0]
+   cmp dl,'S'
+   je l15 ;Verdadera
+   jmp l16 ;Falsa
+
+   l15:
+      mov dl, [SI + 1]
+      cmp dl,'A'
+      je l17 ;Verdadera
+      jmp l16 ;Falsa
+
+   l17:
+      mov dl, [SI + 2]
+      cmp dl,'V'
+      je l18 ;Verdadera
+      jmp l16 ;Falsa
+
+
+   l18:
+      mov dl, [SI + 3]
+      cmp dl,'E'
+      je l19 ;Verdadera
+      jmp l16 ;Falsa
+
+   l19: 
+      mov bx,1d
+      jmp l20
+
+   l16:
+      mov bx,0d
+   
+   l20:
+endm 
+
+;##############################################################################
+;########################## MACRO PARA CREAR EL ARCHIVO         ###################
+;##############################################################################
+crearArchivo macro
+ 
+ 
+endm
+
 .model small
 .stack
 .data
@@ -288,7 +334,13 @@ endm
    ;------------------------------------------- INSTRUCCIONES ----------------------------------------------------------------
    instruccion db 4 DUP("$")
    
+   ;----------------------------------------------------- ARCHIVO --------------------------------------------------------------
+   ingresarArchivo db 10,"Ingrese el nombre del archivo: $";
+   nombreArchivo db 13,0,13 dup("$")
+   creadoExito db 10,"Se ha guardado la partida exitosamente$"
+   creadoFallido db 10,"No se ha podido guardar la partida$"
 
+   
    ;---------------------------------------- OTROS-----------------------------------------------------------------------
    temp dw ?
    temp2 dw ?
@@ -323,55 +375,85 @@ inicio:
 
    
    ;----------------------------------------------- Mostrar Tablero -------------------------------------------------
-   mostrar suerte
-   mostrarTablero tablero
-   
-   
-   recursividadJuego:
-   mostrarCaracter 10
-   ;------------------------------------------------- Mostrar Turno Actual -----------------------------------------
-   cmp turno,0d
-   je tNegra 
-   mostrar turnoBlanca
-   jmp empezar
-   tNegra: 
-   mostrar turnoNegra
-   
-   empezar:
-   
-   ;-------------------------------------------------- ENTRADA ------------------------------------------------------
-   lea SI,instruccion              ; el indice del stack apuntara a la direccion de frase
+      mostrar suerte
+      mostrarTablero tablero
+      
+      
+      recursividadJuego:
+         mostrarCaracter 10
+         ;------------------------------------------------- Mostrar Turno Actual -----------------------------------------
+         cmp turno,0d
+         je tNegra 
+         mostrar turnoBlanca
+         jmp empezar
+         tNegra: 
+            mostrar turnoNegra
+      
+         empezar:
+      
+      
+         lea SI,instruccion              ; el indice del stack apuntara a la direccion de frase
 
-   mov dx,SI                 ; dx apunta al si
-   mov ah,0AH                ; interrupcion para obtener algo de consola
-   int 21h
+         mov dx,SI                 ; dx apunta al si
+         mov ah,0AH                ; interrupcion para obtener algo de consola
+         int 21h
 
-   lea SI, instruccion + 2
-   isExit instruccion + 2
-   ;--------------------------------- Comando Exit -------------------------------------------------
-   cmp bx,1d
-   je salida
-   
-   xor bx,bx
-   ;--------------------------------- Coordernadas --------------------------------------------------
-   mostrarCaracter 10
-   controlMovimiento [SI + 0],[si + 1]
-   
-   cmp bx,2d 
-   je recursividadJuego
+         lea SI, instruccion + 2
+         ;--------------------------------------------------------------- COMANDO EXIT -------------------------------------------------------
+         xor bx,bx
+         isExit instruccion + 2 ;Si es el comando salir
+         cmp bx,1d
+         je salida
+         
+         ;-------------------------------------------------------------- COMANDO SAVE -------------------------------------------------------
+         xor bx,bx
+         isSave instruccion + 2 ; Si es el comando SAVE
+         cmp bx,1d 
+         je save
+         ;---------------------------------------------------------- MOVIMIENTO EN EL TABLERO ----------------------------------------------
+         xor bx,bx
+         mostrarCaracter 10
+         controlMovimiento [SI + 0],[si + 1]
+         
+         cmp bx,2d 
+         je recursividadJuego
 
-   jmp jugar
+         jmp jugar
 
 
    cargar:
-   jmp salida
+      jmp salida
 
-
+   ;####################################################### EXIT ############################################
    salida:
-   mostrar despedida
-   mov   ax,4c00h       
-   int   21h            
- 
+      mostrar despedida
+      mov   ax,4c00h       
+      int   21h            
+   
+
+   ;####################################################### SAVE ############################################
+   save:
+      mostrarCaracter 10
+      mostrar ingresarArchivo
+      
+      mov dx,offset nombreArchivo
+      mov bx,dx
+      mov ah,0Ah 
+      int 21h
+      mov [byte ptr nombreArchivo+2+8],0
+      
+
+      mov ah,3ch 
+      mov cx,00000000b
+      lea dx,[nombreArchivo + 2]
+      int 21h
+      jnc creadoE 
+      mostrar creadoFallido
+      jmp jugar
+    
+      creadoE:
+        mostrar creadoExito
+        jmp jugar
 
 
 

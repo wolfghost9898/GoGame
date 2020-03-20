@@ -299,7 +299,7 @@ endm
 escribirArchivo macro 
    mov ah,40h
    mov al,02H
-   mov bx,[filehandle]
+   mov bx,filehandle
    mov cx,1
    mov dx,offset cadena
    int 21h
@@ -341,13 +341,22 @@ guardarEstado macro
    l22: 
 endm
 
+;##############################################################################
+;########################## CARGAR ESTADO ###################
+;##############################################################################
+cargarEstado macro
+   mov cl, buffer + 0
+   xor ch,ch
+   sub cx, 48
+   mov tablero[0],0d
+endm
 
 ;##############################################################################
 ;########################## CERRAR ARCHIVO ###################
 ;##############################################################################
 cerrarArchivo macro
    mov ah,3Eh
-   mov bx,[filehandle]
+   mov bx,filehandle
    int 21h
 endm
 .model small
@@ -387,10 +396,14 @@ endm
    ingresarArchivo db 10,"Ingrese el nombre del archivo: $";
    nombreArchivo db 13,0,13 dup("$")
    creadoExito db 10,"Se ha creado el archivo$"
+   openFallido db 10,"No se ha podido abrir el archivo$"
    creadoFallido db 10,"No se ha podido guardar la partida$"
    partidaGuardara db 10,"Se ha guardado la partida$"
-   filehandle dw 0
+   cargaExito db 10,"Se ha cargado con exito la partida$"
+   filehandle dw ?
    cadena db 2 DUP("$")
+   buffer db 17 dup (24h)
+
    ;------------------------------------------------------ HTML ----------------------------------------------------------------
    
    ;---------------------------------------- OTROS-----------------------------------------------------------------------
@@ -474,6 +487,44 @@ inicio:
 
 
    cargar:
+      mostrarCaracter 10
+      mostrar ingresarArchivo
+      mov dx,offset nombreArchivo
+      mov bx,dx
+      mov ah,0Ah 
+      int 21h
+      mov [byte ptr nombreArchivo+2+8],0
+
+      mov ah,3Dh
+      xor al,al
+      lea dx,[nombreArchivo + 2]
+      int 21h
+      jc openError
+      
+      mov filehandle,ax
+      mov bx,filehandle
+      mov ah,3fh
+      mov al,0
+      mov cx,16
+      mov dx,offset buffer
+      int 21h
+      jc openError
+      
+      cerrarArchivo
+      xor ax,ax
+      xor bx,bx
+      xor cx,cx 
+      xor dx,dx
+      
+      cargarEstado
+      
+      mostrar cargaExito
+
+      jmp jugar
+      
+
+      openError:
+         mostrar openFallido
       jmp salida
 
    ;####################################################### EXIT ############################################
@@ -499,7 +550,7 @@ inicio:
       mov cx,00000000b
       lea dx,[nombreArchivo + 2]
       int 21h
-      mov [filehandle],ax 
+      mov filehandle,ax 
       jnc creadoE 
       mostrar creadoFallido
       jmp jugar

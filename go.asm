@@ -313,7 +313,7 @@ guardarEstado macro
    xor bx,bx
    l21:
       
-      cmp bx,32d  ; si es mayor a 16 nos salimos del loop
+      cmp bx,128d  ; si es mayor a 16 nos salimos del loop
       jge l22
       mov temp,bx
       
@@ -338,18 +338,70 @@ guardarEstado macro
       inc bx
       jmp l21
 
-   l22: 
+   l22:
+   cmp turno,0d
+   je l26 
+   mov cadena,49 
+   jmp l27 
+
+   l26: 
+      mov cadena,48 
+
+   l27:
+      escribirArchivo 
 endm
 
 ;##############################################################################
 ;########################## CARGAR ESTADO ###################
 ;##############################################################################
 cargarEstado macro
-   mov cl, buffer + 0
-   xor ch,ch
-   sub cx, 48
-   mov tablero[0],0d
+   xor bx,bx 
+   mov SI,offset buffer
+   
+   l28:
+      cmp bx,64d
+      jge l29
+      mov temp,bx
+      mov cl,[SI + bx]
+      xor ch,ch 
+      mov ax,2d
+      mul bx 
+      mov bx,ax
+
+      cmp cl,'2'
+      je l32 
+      
+      cmp cl,'3'
+      je l33 
+      jmp l34
+      l32:
+         mov tablero[bx],2d
+         jmp l34
+      
+      l33:
+         mov tablero[bx],3d 
+         jmp l34
+
+
+
+      l34:
+      mov bx,temp
+      inc bx
+      jmp l28
+   l29:
+   
+   mov cl, buffer + 65
+   cmp cl,'0'
+   je l30
+   mov turno, 1d
+   jmp l31 
+   l30:
+   mov turno,0d
+
+   l31:
+   
 endm
+
 
 ;##############################################################################
 ;########################## CERRAR ARCHIVO ###################
@@ -384,7 +436,7 @@ endm
 
    exitePosicion db 10,"Ya existe una ficha en esa posicion",10,"$"
    ;-------------------------------------------- TABLERO ---------------------------------------------------------------------
-   tablero dw 32 
+   tablero dw 64 
    turno db ?
    coorX db ?
    coorY db ?
@@ -395,6 +447,7 @@ endm
    ;----------------------------------------------------- ARCHIVO --------------------------------------------------------------
    ingresarArchivo db 10,"Ingrese el nombre del archivo: $";
    nombreArchivo db 13,0,13 dup("$")
+   nombreArchivo2 db 13,0,13 dup("$")
    creadoExito db 10,"Se ha creado el archivo$"
    openFallido db 10,"No se ha podido abrir el archivo$"
    creadoFallido db 10,"No se ha podido guardar la partida$"
@@ -402,7 +455,7 @@ endm
    cargaExito db 10,"Se ha cargado con exito la partida$"
    filehandle dw ?
    cadena db 2 DUP("$")
-   buffer db 17 dup (24h)
+   buffer db 66 dup (24h)
 
    ;------------------------------------------------------ HTML ----------------------------------------------------------------
    
@@ -421,7 +474,7 @@ inicio:
    ; Pedir una opcion
    ;ingresarCaracter
    mov turno,0d ; Negras Inician 0 -> Negras, 1 -> Blancas
-   mov bl,'1'
+   mov bl,'2'
    ; switch para las opciones
    cmp bl,'1'
    je jugar
@@ -442,7 +495,7 @@ inicio:
    ;----------------------------------------------- Mostrar Tablero -------------------------------------------------
       mostrar suerte
       mostrarTablero tablero
-      
+      ;jmp salida
       
       recursividadJuego:
          mostrarCaracter 10
@@ -457,11 +510,13 @@ inicio:
          empezar:
       
       
-         lea SI,instruccion              ; el indice del stack apuntara a la direccion de frase
-
-         mov dx,SI                 ; dx apunta al si
+         
+         xor ax,ax
          mov ah,0AH                ; interrupcion para obtener algo de consola
+         mov dx,offset instruccion                 ; dx apunta al si
          int 21h
+        
+
 
          lea SI, instruccion + 2
          ;--------------------------------------------------------------- COMANDO EXIT -------------------------------------------------------
@@ -505,21 +560,21 @@ inicio:
       mov bx,filehandle
       mov ah,3fh
       mov al,0
-      mov cx,16
+      mov cx,65
       mov dx,offset buffer
       int 21h
       jc openError
       
       cerrarArchivo
-      xor ax,ax
-      xor bx,bx
-      xor cx,cx 
-      xor dx,dx
+     
       
       cargarEstado
       
       mostrar cargaExito
-
+      xor ax,ax
+      xor bx,bx
+      xor cx,cx 
+      xor dx,dx
       jmp jugar
       
 
@@ -539,16 +594,17 @@ inicio:
       mostrarCaracter 10
       mostrar ingresarArchivo
       
-      mov dx,offset nombreArchivo
+      mov dx,offset nombreArchivo2
       mov bx,dx
-      mov ah,0Ah 
+      mov ah,0Ah
+      xor al,al 
       int 21h
-      mov [byte ptr nombreArchivo+2+8],0
+      mov [byte ptr nombreArchivo2+2+8],0
       
 
       mov ah,3ch 
       mov cx,00000000b
-      lea dx,[nombreArchivo + 2]
+      lea dx,[nombreArchivo2 + 2]
       int 21h
       mov filehandle,ax 
       jnc creadoE 

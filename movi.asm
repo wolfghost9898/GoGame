@@ -79,9 +79,7 @@ capturaEsquina macro posX,posY,tipo
     cmp posX,8d
     je derecha
 
-
-
-    mov bx,0d
+    capturarCuerpo posX,posY,tipo
     jmp salida
     
     izquierda:
@@ -91,7 +89,7 @@ capturaEsquina macro posX,posY,tipo
         cmp posY,1d
         je abajo 
 
-        mov bx,0d 
+        capturarCuerpo posX,posY,tipo
         jmp salida
 
 
@@ -111,7 +109,7 @@ capturaEsquina macro posX,posY,tipo
         cmp posY,1d
         je abajo2
 
-        mov bx,0d 
+        capturarCuerpo posX,posY,tipo
         jmp salida
 
         arriba2:
@@ -133,7 +131,7 @@ endm
 
 
 ;##############################################################################
-;########################## CAPTURA ESQUINA SUPERIOR IZQUIERDA         ###################
+;########################## CAPTURA ESQUINAS        ###################
 ;##############################################################################
 
 esquinas macro posX,posY,posX2,posY2,tipo
@@ -190,4 +188,231 @@ esquinas macro posX,posY,posX2,posY2,tipo
     
     salida:
     
+endm
+
+
+
+;##############################################################################
+;########################## CAPTURA CUERPO         ###################
+;##############################################################################
+capturarCuerpo macro posX,posY,tipo
+    LOCAL libertad,salida
+
+    mov bx,posY 
+    mov cx,posX
+    buscarLibertadNorte tipo 
+    
+    cmp bx,0d
+    je libertad 
+
+    mov bx,posY
+    mov cx,posX
+    buscarLibertadSur tipo
+
+    cmp bx,0d 
+    je libertad
+
+    mov bx,posY
+    mov cx,posX 
+    buscarLibertadEste tipo 
+
+    cmp bx,0d
+    je libertad
+
+    mov bx,posY
+    mov cx,posX 
+    buscarLibertadOeste tipo 
+    
+    cmp bx,0d
+    je libertad
+
+    mov bx,1d
+
+    jmp salida
+
+
+    libertad:
+        mov bx,0d
+    
+    salida:
+        
+
+
+       
+endm
+
+;##############################################################################
+;########################## BUSCAR LIBERTAD  NORTE       ###################
+;##############################################################################
+buscarLibertadNorte macro tipo 
+    LOCAl posY,finY,libertad,salida,sinLibertad 
+
+    posY:
+        cmp bx,8d
+        jg finY
+
+        mov temp3,bx
+        mov temp4,cx
+        
+        mov bx,cx 
+        mov cx,temp3 
+        mapeoLexico
+
+        cmp [tablero + bx],0d
+        je libertad
+
+        cmp [tablero + bx],tipo 
+        jne sinLibertad
+
+        mov bx,temp3 
+        mov cx,temp4
+
+
+        inc bx
+        jmp posY
+    finY:
+        mov bx,3d
+        jmp salida 
+    
+    libertad:
+        mov bx,0d
+        jmp salida
+    
+    sinLibertad:
+        mov bx,1d 
+        jmp salida
+    
+    salida:
+endm
+
+
+;##############################################################################
+;########################## BUSCAR LIBERTAD  SUR       ###################
+;##############################################################################
+buscarLibertadSur macro tipo 
+    LOCAl posY,finY,libertad,salida,sinLibertad 
+
+    posY:
+        cmp bx,0d
+        jle finY
+
+        mov temp3,bx
+        mov temp4,cx
+        
+        mov bx,cx 
+        mov cx,temp3 
+        mapeoLexico
+
+        cmp [tablero + bx],0d
+        je libertad
+
+        cmp [tablero + bx],tipo 
+        jne sinLibertad
+
+        mov bx,temp3 
+        mov cx,temp4
+
+
+        dec bx
+        jmp posY
+    finY:
+        mov bx,3d
+        jmp salida 
+    
+    libertad:
+        mov bx,0d
+        jmp salida
+    
+    sinLibertad:
+        mov bx,1d 
+        jmp salida
+    salida:
+endm
+
+
+;##############################################################################
+;########################## BUSCAR LIBERTAD  ESTE       ###################
+;##############################################################################
+buscarLibertadEste macro tipo 
+    LOCAl posX,finX,libertad,salida,sinLibertad 
+
+    posX:
+        cmp cx,8d
+        jg finX
+
+        mov temp3,bx
+        mov temp4,cx
+        
+        mov bx,cx 
+        mov cx,temp3 
+        mapeoLexico
+
+        cmp [tablero + bx],0d
+        je libertad
+
+        cmp [tablero + bx],tipo 
+        jne sinLibertad
+
+        mov bx,temp3 
+        mov cx,temp4
+
+
+        inc cx
+        jmp posX
+    finX:
+        mov bx,3d
+        jmp salida 
+    
+    libertad:
+        mov bx,0d
+        jmp salida
+    
+    sinLibertad:
+        mov bx,1d 
+        jmp salida
+    salida:
+endm
+
+
+;##############################################################################
+;########################## BUSCAR LIBERTAD  OESTE       ###################
+;##############################################################################
+buscarLibertadOeste macro tipo 
+    LOCAl posX,finX,libertad,salida,sinLibertad 
+
+    posX:
+        cmp cx,0d
+        jle finX
+
+        mov temp3,bx
+        mov temp4,cx
+        
+        mov bx,cx 
+        mov cx,temp3 
+        mapeoLexico
+
+        cmp [tablero + bx],0d
+        je libertad
+
+        cmp [tablero + bx],tipo 
+        jne sinLibertad
+
+        mov bx,temp3 
+        mov cx,temp4
+
+
+        dec cx
+        jmp posX
+    finX:
+        mov bx,3d
+        jmp salida 
+    
+    libertad:
+        mov bx,0d
+        jmp salida
+    
+    sinLibertad:
+        mov bx,1d 
+        jmp salida
+    salida:
 endm

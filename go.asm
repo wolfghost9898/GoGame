@@ -302,6 +302,11 @@ endm
       temp3 dw ?
       temp4 dw ?
       temp5 db 0
+   ;--------------------------------------- COORDENADAS ---------------------------
+      norte dw ?
+      sur dw ?
+      este dw ?
+      oeste dw ?
 .code
  
 inicio:

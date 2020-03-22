@@ -2,17 +2,17 @@
 ;########################## CONTROL CAPTURA           ###################
 ;##############################################################################
 controlCaptura macro
-    LOCAL posY,posX,forY,finY,forX,finX,noCapturado
+    LOCAL posY,posX,forY,finY,forX,finX,noCapturado,capturarBlanco,capturarNegra,saltarCaptura
     mov bx,8d
 
     forY:
         cmp bx,0d
         jle finY 
 
-        mov cx,0d
+        mov cx,1d
 
         forX:
-            cmp cx,7d
+            cmp cx,8d
             jg finX
 
                 mov temp,cx
@@ -22,19 +22,32 @@ controlCaptura macro
                 mov bx,temp 
                 mapeoLexico
                 
-                mov bx,tablero[bx]
-                 
+                mov bl,[tablero + bx]
+                xor bh,bh
 
                
+                cmp bx,2d
+                je capturarNegra
+                cmp bx,3d
+                je capturarBlanco
+                capturaEsquina temp,temp2,0d
+                jmp saltarCaptura
+                capturarNegra:
+                   capturaEsquina temp,temp2,2d
+                   jmp saltarCaptura
+                capturarBlanco:
+                    capturaEsquina temp,temp2,3d
+                    jmp saltarCaptura
+                
+                saltarCaptura:
 
-                capturaEsquina temp,temp2,bx
                 cmp bx,0d
                 je noCapturado
                 
                 mov cx,temp2 
                 mov bx,temp 
                 mapeoLexico 
-                mov tablero[bx],1d
+                mov [tablero + bx],0d
 
 
 
@@ -57,13 +70,13 @@ endm
 ;########################## CAPTURA EN ESQUINAS          ###################
 ;##############################################################################
 capturaEsquina macro posX,posY,tipo
-    LOCAL izquierda,derecha,arriba,arriba2,salida,abajo
+    LOCAL izquierda,derecha,arriba,arriba2,salida,abajo,abajo2
     
     
-    cmp posX,0d 
+    cmp posX,1d 
     je izquierda
     
-    cmp posX,7d
+    cmp posX,8d
     je derecha
 
 
@@ -83,11 +96,11 @@ capturaEsquina macro posX,posY,tipo
 
 
         arriba:
-            esquinas 1d,8d,0d,7d,tipo
+            esquinas 2d,8d,1d,7d,tipo
             jmp salida
         
         abajo:
-            esquinas 0d,2d,1d,1d,tipo 
+            esquinas 2d,1d,1d,2d,tipo 
             jmp salida
 
 
@@ -95,14 +108,24 @@ capturaEsquina macro posX,posY,tipo
         cmp posY,8d
         je arriba2
 
+        cmp posY,1d
+        je abajo2
+
         mov bx,0d 
         jmp salida
 
         arriba2:
-            esquinas 6d,8d,7d,7d,tipo
+            esquinas 7d,8d,8d,7d,tipo
+            jmp salida
+
+        abajo2:
+            esquinas 7d,1d,8d,2d,tipo
             jmp salida
     
     
+   
+
+
     salida:
     
 
@@ -120,60 +143,51 @@ esquinas macro posX,posY,posX2,posY2,tipo
 
     mapeoLexico
 
-    cmp tablero[bx],2d
-    je l0
-    cmp tablero[bx],3d
-    je l0
-
-    jmp libertad
-    l0:
-        mov bx,posX2
-        mov cx,posY2
-        mapeoLexico
+    
+    cmp [tablero + bx],0d
+    je libertad
+    
+    
+    mov bx,posX2
+    mov cx,posY2
+    mapeoLexico
         
-        cmp tablero[bx],2d
-        je l1
-        cmp tablero[bx],3d
-        je l1
+    cmp [tablero + bx],0d
+    je libertad
 
-        jmp libertad
-
-    l1:
-        mov bx,posX
-        mov cx,posY
-        mapeoLexico
+    
+    mov bx,posX
+    mov cx,posY
+    mapeoLexico
 
        
 
+    cmp [tablero + bx],tipo
+    je libertad 
 
-        cmp tablero[bx],tipo
-        je libertad 
-
-        mov bx,posX2
-        mov cx,posY2
-        mapeoLexico
-
-        
-
-        cmp tablero[bx],tipo 
-        je libertad
-        
+    mov bx,posX2
+    mov cx,posY2
+    mapeoLexico
 
         
+    mov ax,tipo 
+    xor ah,ah
+    cmp [tablero + bx],tipo
+    je libertad
+        
+    cmp [tablero + bx],0d
+    je libertad
 
-        cmp tipo,1d
-        je libertad
-        
-        
-        noLibertad:
-            mov bx,1d
-            jmp salida
+    noLibertad:
+        mov bx,1d
+        jmp salida
 
 
     ; Hay una libertad 
     libertad:
         mov bx,0d
 
+    
     salida:
     
 endm

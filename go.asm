@@ -301,7 +301,7 @@ endm
       temp2 dw ?
       temp3 dw ?
       temp4 dw ?
-      temp5 db 2
+      temp5 db 0
 .code
  
 inicio:
@@ -316,7 +316,7 @@ inicio:
    ;ingresarCaracter
    ;limpiarTablero 
    mov turno,0d ; Negras Inician 0 -> Negras, 1 -> Blancas
-   mov bl,'2'
+   mov bl,'1'
    mov bh,0d
    ; switch para las opciones
    cmp bl,'1'
@@ -386,7 +386,7 @@ inicio:
          je recursividadJuego
 
          ; Verificar las capturas
-         ;controlCaptura
+         controlCaptura
          cambiarTurno
          jmp jugar
 

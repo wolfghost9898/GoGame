@@ -131,10 +131,10 @@ guardarTablero macro
       cmp bx,0d
       jle fin 
 
-      mov cx,0d
+      mov cx,1d
        
       recursividadX:
-         cmp cx,7d
+         cmp cx,8d
          jg finX 
 
          mov temp,bx 

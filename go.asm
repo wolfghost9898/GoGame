@@ -289,13 +289,34 @@ endm
       html db "<!DOCTYPE html>",10,"<html lang=",34,"es",34,">",10,"<head>",10,"$"
       headHtml db "<link rel=",34,"stylesheet",34,"href=",34,"style.css",34,">",10,"<meta charset=",34,"UTF-8",34,">",10,"<title>201612118</title>",10,"</head>",10,"$"
       bodyHtml db "<body>",10,"<div class=",34,"board",34,">",10,"<img src=",34,"board.png",34,"/>",10,"<div class=",34,"boardGrid",34,">",10,"$"
-      closeBodyHtml db "</div>",10,"</div>",10,"</body>",10,"</html>$"
+      closeBodyHtml db "</div>",10,"</div>",10,"</body>",10,"$"
+      closeHtml db "</html>$"
       sinFichaHtml db "<div class=",34,"gridSpace",34,">0</div>",10,"$"
       BFichaHtml db "<div class=",34,"gridSpace white",34,">0</div>",10,"$"
       NFichaHtml db "<div class=",34,"gridSpace black",34,">0</div>",10,"$"
       direccionTablero db "C:\p4\salida\index.html",0
       showExitoso db "Se creo un html con el estado del tablero",10,"$"
       showFallado db "No se pudo crear el html con el estado del tablero",10,"$"
+      h1Html db "<h1>$"
+      h1closeHtml db "</h1>",10,"$"
+      diagonal db "/$"
+      dspuntos db ":$"
+      espacioss db "   $"
+      day db 2 DUP(0),"$"
+      day2 db 2 DUP(0),"$"
+
+      month db 2 DUP(0),"$"
+
+      year dw 8 DUP(0),"$"
+      year1 db 2 DUP(0),"$"
+      year2 db 2 DUP(0),"$"
+      year3 db 2 DUP(0),"$"
+      year4 db 2 DUP(0),"$"
+
+      horas DB ?, '$'
+      minutos DB ?,'$'
+      segundos DB ?,'$'
+
    ;---------------------------------------- OTROS---,--------------------------------------------------------------------
       temp dw ?
       temp2 dw ?

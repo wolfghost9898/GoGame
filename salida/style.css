@@ -1,5 +1,5 @@
 html {
-    background: #444;
+    background: #D0CBC7;
   }
   
   .board {
@@ -40,4 +40,10 @@ html {
 
   .white{
       background: white;
+  }
+
+  h1{
+    min-height: 100%;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    text-align: center;
   }

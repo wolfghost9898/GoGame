@@ -169,8 +169,14 @@ guardarTablero macro
    dec bx
    jmp recursividad 
    fin:
-
-   escribirCadenaArchivo closeBodyHtml,27
+   
+   escribirCadenaArchivo closeBodyHtml,22
+   escribirCadenaArchivo h1Html,4
+   obtenerFecha
+   obtenerHora
+   escribirCadenaArchivo h1closeHtml,6
+   
+   escribirCadenaArchivo closeHtml,7
 endm
 ;##############################################################################
 ;########################## ESCRIBIR UNA CADENA EN UN ARCHIVO###################
@@ -183,4 +189,153 @@ escribirCadenaArchivo macro cadena, tam
    int 21h
 
    mov ah,40h
+endm
+
+
+;##############################################################################
+;########################## OBTENER FECHA###################
+;##############################################################################
+
+obtenerFecha macro
+   LOCAL decena,mes,anio,decena2
+   mov ah,2ah
+   int 21h
+
+   mov year,cx
+   mov day,dl
+   mov month,dh
+
+   cmp day,10d
+   jge decena
+
+   add day,48d
+   escribirCadenaArchivo day,1
+   jmp mes
+
+   decena:
+      mov al,day
+      mostrarDecenas day
+
+   mes:
+      escribirCadenaArchivo diagonal,1
+
+      cmp month,10d
+      jge decena2 
+
+      add month,48d
+      escribirCadenaArchivo month,1
+
+      jmp anio
+
+      decena2:
+         mov al,month
+         mostrarDecenas month
+
+   anio:
+      escribirCadenaArchivo diagonal,1
+      mov bx,offset year
+      mov ax,[bx]
+      mov cl,10
+      div cl
+      mov year1,ah
+
+      mov ah, 0
+      mov cl, 10
+      div cl
+      mov year2,ah
+
+      mov ah, 0
+      mov cl, 10
+      div cl
+      mov year3,ah
+
+      mov ah, 0
+      mov cl, 10
+      div cl
+      mov year4,ah
+
+      add year1,48d
+      add year2,48d
+      add year3,48d
+      add year4,48d
+      escribirCadenaArchivo year4,1
+      escribirCadenaArchivo year3,1
+      escribirCadenaArchivo year2,1
+      escribirCadenaArchivo year1,1
+      escribirCadenaArchivo espacioss,3
+endm
+
+
+;##############################################################################
+;########################## OBTENER HORA ###################
+;##############################################################################
+
+obtenerHora macro 
+   LOCAL decenas,minutosE,decenas2,segundosE,decenas3,salida
+   mov ah, 2Ch
+   int 21h
+
+   mov  horas,ch
+   mov minutos,cl
+   mov segundos,dh
+
+   cmp horas,10d
+   jge decenas
+   add horas,48d
+   escribirCadenaArchivo horas,1
+   
+   jmp minutosE
+
+
+   decenas:
+      mov al,horas
+      mostrarDecenas horas
+
+   minutosE:
+      escribirCadenaArchivo dspuntos,1
+
+      cmp minutos,10d
+      jge decenas2
+      add minutos,48d
+      escribirCadenaArchivo minutos,1
+      jmp segundosE
+      
+      decenas2:
+         mov al,minutos
+         mostrarDecenas minutos
+
+
+
+   segundosE:
+      escribirCadenaArchivo dspuntos,1
+
+      cmp segundos,10d 
+      jge decenas3
+
+      add segundos,48d
+      escribirCadenaArchivo segundos,1
+      jmp salida
+
+
+
+      decenas3:
+         mov al,segundos
+         mostrarDecenas segundos
+
+
+      salida:
+    
+endm
+
+
+mostrarDecenas macro numero
+   xor ah,ah 
+   mov cl,10d 
+   div cl 
+   mov day,al
+   add day,48d
+   mov day2,ah
+   add day2,48d
+   escribirCadenaArchivo day,1
+   escribirCadenaArchivo day2,1
 endm

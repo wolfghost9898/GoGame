@@ -1,5 +1,7 @@
 include files.asm
 include estados.asm
+include movi.asm
+
 ;##############################################################################
 ;########################## MACRO ENCARGADO DE MOSTRAR UNA CADENA #############
 ;##############################################################################
@@ -53,23 +55,22 @@ mostrarTablero macro tablero
       mostrarCaracter 32
       mostrarCaracter 32
          ; For para X
-         mov cx,0d
+         mov cx,1d
          recursividadX:
-            cmp cx,7d 
+            cmp cx,8d 
             jg finX
             
             
             mov temp,bx 
             mov temp2,cx 
             
-            ;sub bx,1d
             mov cx,bx 
             mov bx,temp2
             mapeoLexico
             
-            cmp tablero[bx],2d
+            cmp [tablero + bx],2d
             je posNegra
-            cmp tablero[bx],3d
+            cmp [tablero + bx],3d
             je posBlanca
             mostrarCaracter 32
             jmp l14
@@ -107,13 +108,13 @@ endm
 ;##############################################################################
 controlMovimiento macro posX,posY
    mov bl,posX
-   sub bl,17d ; Lo pasamos a numero
+   sub bl,16d ; Lo pasamos a numero
    mov bh,0d ; limpimos los bits mas significativos
 
    mov cl,posY
    
-   ; X >= 0
-   cmp bl,48d 
+   ; X >= 1
+   cmp bl,49d 
    jge l0
    jmp l1
 
@@ -133,8 +134,8 @@ controlMovimiento macro posX,posY
 
    ;Verdadera
    l2:
-      ; Y >= 0
-      cmp cl,48d
+      ; Y >= 1
+      cmp cl,49d
       jge l5
       jmp l1
 
@@ -169,7 +170,7 @@ controlMovimiento macro posX,posY
       
 
       tNegro:
-      mov tablero[bx],2d
+      mov [tablero + bx],2d
       xor bx,bx 
       mov bx,3d ; Todo bien todo correcto 
       
@@ -183,11 +184,17 @@ controlMovimiento macro posX,posY
 
 
       salirTurno:
-      cambiarTurno
+      xor ax,ax
+      xor bx,bx
+      xor cx,cx 
+      xor dx,dx
       
 
    l4:
-   
+   xor ax,ax
+      xor bx,bx
+      xor cx,cx 
+      xor dx,dx
 
 endm
 ;##############################################################################
@@ -195,16 +202,22 @@ endm
 ;##############################################################################
 mapeoLexico macro 
    xor AX,AX
-   mov AX,CX
-   mov CX,8d
-   mul CX
-   add AX,BX
-   mov CX,2d
-   mul CX
+   sub BX,1d
+   mov AX,BX
+   mov BX,8d
+   mul BX
+   add AX,CX
+   sub AX,1d
    
    mov BX,AX
-   
+
 endm
+
+;##############################################################################
+;########################## LIMPIAR TABLERO          ###################
+;##############################################################################
+
+
 
 ;##############################################################################
 ;########################## CAMBIAR TURNO             ###################
@@ -230,66 +243,81 @@ endm
 .stack
 .data
    ;--------------------------------------------------------------- MENSAJES -----------------------------------------------
-   cabecera   db "Universidad de San Carlos de Guatemala",10,"Facultad de Ingenieria",10,"Ciencias y Sistemas",10,
-   "Arquitectura de computadores y ensambladores 1",10,"Carlos Eduardo Hernandez Molina",10,"201612118",10,"Seccion: A",10,"$"
+      cabecera   db "Universidad de San Carlos de Guatemala",10,"Facultad de Ingenieria",10,"Ciencias y Sistemas",10,
+      "Arquitectura de computadores y ensambladores 1",10,"Carlos Eduardo Hernandez Molina",10,"201612118",10,"Seccion: A",10,"$"
    
-   opciones db 10,10,"1) Iniciar Juego",10,"2) Cargar Juego",10,"3) Salir",10,"$"
+      opciones db 10,10,"1) Iniciar Juego",10,"2) Cargar Juego",10,"3) Salir",10,"$"
 
-   despedida db 10,"Saliendo del juego...","$"
+      despedida db 10,"Saliendo del juego...","$"
 
-   suerte db 10,"Ganbatte...$"
+      suerte db 10,"Ganbatte...$"
 
 
-   errorPosicion db 10, "Posicion Incorrecta :(",10,"$"
+      errorPosicion db 10, "Posicion Incorrecta :(",10,"$"
 
-   separacion db "---$"
-   separacionFilas db "    *     *     *     *     *     *     *     *",10,"$"
-   cabeceraX db "    A     B     C     D     E     F     G     H ",10,"$"
+      separacion db "---$"
+      separacionFilas db "    *     *     *     *     *     *     *     *",10,"$"
+      cabeceraX db "    A     B     C     D     E     F     G     H ",10,"$"
 
-   turnoNegra db 10,"Turno Negra: $"
-   turnoBlanca db 10,"Turno Blanca: $"
+      turnoNegra db 10,"Turno Negra: $"
+      turnoBlanca db 10,"Turno Blanca: $"
 
-   exitePosicion db 10,"Ya existe una ficha en esa posicion",10,"$"
+      exitePosicion db 10,"Ya existe una ficha en esa posicion",10,"$"
    ;-------------------------------------------- TABLERO ---------------------------------------------------------------------
-   tablero dw 64 
-   turno db ?
-   coorX db ?
-   coorY db ?
+      tablero db 70 dup(0)
+      turno db ?
+      coorX db ?
+      coorY db ?
 
    ;------------------------------------------- INSTRUCCIONES ----------------------------------------------------------------
-   instruccion db 4 DUP("$")
+      instruccion db 4 DUP("$")
    
    ;----------------------------------------------------- ARCHIVO --------------------------------------------------------------
-   ingresarArchivo db 10,"Ingrese el nombre del archivo: $";
-   nombreArchivo db 13,0,13 dup("$")
-   nombreArchivo2 db 13,0,13 dup("$")
-   creadoExito db 10,"Se ha creado el archivo$"
-   openFallido db 10,"No se ha podido abrir el archivo$"
-   creadoFallido db 10,"No se ha podido guardar la partida$"
-   partidaGuardara db 10,"Se ha guardado la partida$"
-   cargaExito db 10,"Se ha cargado con exito la partida$"
-   filehandle dw ?
-   cadena db 2 DUP("$")
-   buffer db 66 dup (24h)
+      ingresarArchivo db 10,"Ingrese el nombre del archivo: $";
+      nombreArchivo db 13,0,13 dup("$")
+      nombreArchivo2 db 13,0,13 dup("$")
+      creadoExito db 10,"Se ha creado el archivo$"
+      openFallido db 10,"No se ha podido abrir el archivo$"
+      creadoFallido db 10,"No se ha podido guardar la partida$"
+      partidaGuardara db 10,"Se ha guardado la partida$"
+      cargaExito db 10,"Se ha cargado con exito la partida$"
+      filehandle dw ?
+      cadena db 2 DUP("$")
+      buffer db 66 dup (24h)
 
    ;------------------------------------------------------ HTML ----------------------------------------------------------------
-   
-   ;---------------------------------------- OTROS-----------------------------------------------------------------------
-   temp dw ?
-   temp2 dw ?
+      html db "<!DOCTYPE html>",10,"<html lang=",34,"es",34,">",10,"<head>",10,"$"
+      headHtml db "<link rel=",34,"stylesheet",34,"href=",34,"style.css",34,">",10,"<meta charset=",34,"UTF-8",34,">",10,"<title>201612118</title>",10,"</head>",10,"$"
+      bodyHtml db "<body>",10,"<div class=",34,"board",34,">",10,"<img src=",34,"board.png",34,"/>",10,"<div class=",34,"boardGrid",34,">",10,"$"
+      closeBodyHtml db "</div>",10,"</div>",10,"</body>",10,"</html>$"
+      sinFichaHtml db "<div class=",34,"gridSpace",34,">0</div>",10,"$"
+      BFichaHtml db "<div class=",34,"gridSpace white",34,">0</div>",10,"$"
+      NFichaHtml db "<div class=",34,"gridSpace black",34,">0</div>",10,"$"
+      direccionTablero db "C:\p4\salida\index.html",0
+      showExitoso db "Se creo un html con el estado del tablero",10,"$"
+      showFallado db "No se pudo crear el html con el estado del tablero",10,"$"
+   ;---------------------------------------- OTROS---,--------------------------------------------------------------------
+      temp dw ?
+      temp2 dw ?
+      temp3 dw ?
+      temp4 dw ?
+      temp5 db 2
 .code
  
 inicio:
    mov ax,@data
    mov ds,ax
    mov dx,ax
+   
    ; Mostrar Cabecera
    mostrar cabecera
    mostrar opciones
    ; Pedir una opcion
    ;ingresarCaracter
+   ;limpiarTablero 
    mov turno,0d ; Negras Inician 0 -> Negras, 1 -> Blancas
    mov bl,'2'
+   mov bh,0d
    ; switch para las opciones
    cmp bl,'1'
    je jugar
@@ -303,11 +331,10 @@ inicio:
    ;#################################################################################################################################
    ;#########################################################JUGAR###################################################################
    ;#################################################################################################################################
-   jugar:
-  
-
    
-   ;----------------------------------------------- Mostrar Tablero -------------------------------------------------
+   jugar:
+       
+      ;----------------------------------------------- Mostrar Tablero -------------------------------------------------
       mostrar suerte
       mostrarTablero tablero
       ;jmp salida
@@ -345,14 +372,22 @@ inicio:
          isSave instruccion + 2 ; Si es el comando SAVE
          cmp bx,1d 
          je save
+
+         xor bx,bx 
+         isShow instruccion  + 2 
+         cmp bx,1d 
+         je show
          ;---------------------------------------------------------- MOVIMIENTO EN EL TABLERO ----------------------------------------------
          xor bx,bx
          mostrarCaracter 10
+         ; Si quiere poner una ficha donde ya existe una
          controlMovimiento [SI + 0],[si + 1]
-         
          cmp bx,2d 
          je recursividadJuego
 
+         ; Verificar las capturas
+         ;controlCaptura
+         cambiarTurno
          jmp jugar
 
 
@@ -434,6 +469,22 @@ inicio:
          jmp jugar
 
 
+   ;###################################################### SHOW ############################################
+   show:
+      mov ah,3ch 
+      mov cx,00000000b
+      lea dx, [direccionTablero]
+      int 21h
+      mov filehandle,ax 
+      jnc showE 
+      mostrar showFallado
+      jmp jugar
+
+         showE:
+            mostrar showExitoso
+            guardarTablero
+            cerrarArchivo
+            jmp jugar
 
 
 

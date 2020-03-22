@@ -19,13 +19,13 @@ guardarEstado macro
    xor bx,bx
    l21:
       
-      cmp bx,128d  ; si es mayor a 16 nos salimos del loop
+      cmp bx,64d  ; si es mayor a 16 nos salimos del loop
       jge l22
       mov temp,bx
       
-      cmp tablero[bx],2d
+      cmp [tablero + bx],2d
       je l23
-      cmp tablero[bx],3d
+      cmp [tablero + bx],3d
       je l24
       mov cadena,48
       jmp l25
@@ -40,7 +40,6 @@ guardarEstado macro
          escribirArchivo
       mov bx,temp
       
-      inc bx
       inc bx
       jmp l21
 
@@ -70,9 +69,7 @@ cargarEstado macro
       mov temp,bx
       mov cl,[SI + bx]
       xor ch,ch 
-      mov ax,2d
-      mul bx 
-      mov bx,ax
+      
 
       cmp cl,'2'
       je l32 
@@ -81,11 +78,11 @@ cargarEstado macro
       je l33 
       jmp l34
       l32:
-         mov tablero[bx],2d
+         mov [tablero + bx],2d
          jmp l34
       
       l33:
-         mov tablero[bx],3d 
+         mov [tablero + bx],3d 
          jmp l34
 
 
@@ -116,4 +113,74 @@ cerrarArchivo macro
    mov ah,3Eh
    mov bx,filehandle
    int 21h
+endm
+
+
+;##############################################################################
+;########################## GUARDAR TABLERO ###################
+;##############################################################################
+guardarTablero macro
+   LOCAL recursividad,fin,blanco,negro,salto,recursividadX,finX
+   escribirCadenaArchivo html,40
+   escribirCadenaArchivo headHtml,96
+   escribirCadenaArchivo bodyHtml,74
+   
+   mov bx,8d
+
+   recursividad:
+      cmp bx,0d
+      jle fin 
+
+      mov cx,0d
+       
+      recursividadX:
+         cmp cx,7d
+         jg finX 
+
+         mov temp,bx 
+         mov temp2,cx 
+
+         mov cx,bx 
+         mov bx,temp2
+         mapeoLexico
+
+         cmp tablero[bx],3d 
+         je blanco 
+         cmp tablero[bx],2d
+         je negro
+         escribirCadenaArchivo sinFichaHtml,31
+         jmp salto
+      
+         blanco:
+            escribirCadenaArchivo BFichaHtml,37
+            jmp salto
+         
+         negro:
+            escribirCadenaArchivo NFichaHtml,37
+         salto:
+
+         mov bx,temp
+         mov cx,temp2
+         inc cx
+         jmp recursividadX
+
+      finX:
+
+   dec bx
+   jmp recursividad 
+   fin:
+
+   escribirCadenaArchivo closeBodyHtml,27
+endm
+;##############################################################################
+;########################## ESCRIBIR UNA CADENA EN UN ARCHIVO###################
+;##############################################################################
+escribirCadenaArchivo macro cadena, tam
+   mov ah,40h
+   mov bx,filehandle
+   mov cx,tam
+   mov dx, offset cadena 
+   int 21h
+
+   mov ah,40h
 endm

@@ -3,9 +3,9 @@ html {
   }
   
   .board {
-    background: #dab066;
-    width: 500px;
-    padding: 20px;
+    width: 550px;
+    height: 550px;
+    padding: 10px;
     border-radius: 10px;
     position: relative;
     margin-top:5%;
@@ -24,10 +24,12 @@ html {
     left: -10px;
   }
   .gridSpace {
-    min-height: 50px;
-    min-width: 50px;
-    margin-right: 22px;
-    margin-bottom: 2.5px;
+    min-height: 40px;
+    min-width: 40px;
+    margin-left: 40px;
+    margin-right: -11px;
+    margin-bottom: -7px;
+    margin-top:35px;
     font-size: 0px;
     border-radius: 100%;
   }

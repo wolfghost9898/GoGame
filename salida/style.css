@@ -23,6 +23,7 @@ html {
     top: -10px;
     left: -10px;
   }
+
   .gridSpace {
     min-height: 40px;
     min-width: 40px;
@@ -32,6 +33,49 @@ html {
     margin-top:35px;
     font-size: 0px;
     border-radius: 100%;
+  }
+
+
+  .square{
+    height: 40px;
+    width: 40px;
+    margin-left: 40px;
+    margin-right: -11px;
+    margin-bottom: -7px;
+    margin-top:35px;
+    font-size: 0px;
+    border-color:  rgb(139, 35, 35);
+    border-style: solid;
+  }
+
+  .circle{
+    min-height: 40px;
+    min-width: 40px;
+    margin-left: 40px;
+    margin-right: -11px;
+    margin-bottom: -7px;
+    margin-top:35px;
+    font-size: 0px;
+    border-radius: 100%;
+    border-color:rgb(139, 35, 35);
+    border-style: solid;
+  }
+
+  .triangle{
+    margin-left: 25px;
+    margin-right: -11px;
+    margin-bottom: -7px;
+    margin-top: 38px;
+    width: 0px;
+    height: 0px;
+    
+    
+    border-bottom: solid 30px rgb(139, 35, 35);
+    border-left: solid 30px transparent;
+    border-right: solid 30px transparent;
+    display: inline-block;
+    font-size: 0px;
+    vertical-align: middle;
   }
 
   .black{

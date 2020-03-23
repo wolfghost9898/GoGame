@@ -110,3 +110,44 @@ isShow macro palabra
    
    l20:
 endm 
+
+
+
+;##############################################################################
+;########################## COMANDO PASS            ###################
+;##############################################################################
+isPass macro palabra
+   LOCAL l15,l16,l17,l18,l19,l20
+   mov dl, [SI + 0]
+   cmp dl,'P'
+   je l15 ;Verdadera
+   jmp l16 ;Falsa
+
+   l15:
+      mov dl, [SI + 1]
+      cmp dl,'A'
+      je l17 ;Verdadera
+      jmp l16 ;Falsa
+
+   l17:
+      mov dl, [SI + 2]
+      cmp dl,'S'
+      je l18 ;Verdadera
+      jmp l16 ;Falsa
+
+
+   l18:
+      mov dl, [SI + 3]
+      cmp dl,'S'
+      je l19 ;Verdadera
+      jmp l16 ;Falsa
+
+   l19: 
+      mov bx,1d
+      jmp l20
+
+   l16:
+      mov bx,0d
+   
+   l20:
+endm 

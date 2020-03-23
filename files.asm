@@ -117,6 +117,90 @@ endm
 
 
 ;##############################################################################
+;########################## REPORTE 2 ###################
+;##############################################################################
+
+hacerReporte2 macro
+   LOCAL recursividad,fin,blanco,negro,salto,recursividadX,finX,libre,territorioNegra
+   escribirCadenaArchivo html,40
+   escribirCadenaArchivo headHtml,96
+   escribirCadenaArchivo bodyHtml,74
+   
+   mov bx,8d
+
+   recursividad:
+      cmp bx,0d
+      jle fin 
+
+      mov cx,1d
+       
+      recursividadX:
+         cmp cx,8d
+         jg finX 
+
+         mov temp,bx 
+         mov temp2,cx 
+
+         mov cx,bx 
+         mov bx,temp2
+         mapeoLexico
+
+         cmp tablero[bx],3d 
+         je blanco 
+         cmp tablero[bx],2d
+         je negro
+         cmp [tablero + bx],4d 
+         je libre
+         cmp [tablero + bx],5d 
+         je territorioNegra
+         cmp [tablero + bx],6d 
+         je territorioBlanco
+
+         escribirCadenaArchivo sinFichaHtml,31
+         jmp salto
+      
+         blanco:
+            escribirCadenaArchivo BFichaHtml,37
+            jmp salto
+         
+         negro:
+            escribirCadenaArchivo NFichaHtml,37
+            jmp salto 
+
+         libre: 
+            escribirCadenaArchivo triangle, 30
+            jmp salto 
+
+         territorioNegra:
+            escribirCadenaArchivo circle,28
+            jmp salto 
+         
+         territorioBlanco:
+            escribirCadenaArchivo square,28
+         salto:
+
+         mov bx,temp
+         mov cx,temp2
+         inc cx
+         jmp recursividadX
+
+      finX:
+
+   dec bx
+   jmp recursividad 
+   fin:
+   
+   escribirCadenaArchivo closeBodyHtml,22
+   escribirCadenaArchivo h1Html,4
+   obtenerFecha
+   obtenerHora
+   escribirCadenaArchivo h1closeHtml,6
+   
+   escribirCadenaArchivo closeHtml,7
+endm
+
+
+;##############################################################################
 ;########################## GUARDAR TABLERO ###################
 ;##############################################################################
 guardarTablero macro

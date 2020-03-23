@@ -191,10 +191,7 @@ controlMovimiento macro posX,posY
       
 
    l4:
-   xor ax,ax
-      xor bx,bx
-      xor cx,cx 
-      xor dx,dx
+      
 
 endm
 ;##############################################################################
@@ -223,6 +220,7 @@ endm
 ;########################## CAMBIAR TURNO             ###################
 ;##############################################################################
 cambiarTurno macro 
+   LOCAL l7,l8
    cmp turno,0d
    je l7 
    mov turno,0d
@@ -234,10 +232,245 @@ cambiarTurno macro
    l8:
 endm
 
+;##############################################################################
+;########################## DELIMITAR TERRITORIO           ###################
+;##############################################################################
+
+delimitarTerritorio macro
+   LOCAL recursividadY,finY,nada,finX,recursividadX,libre,todo,negro,territorioNegro,blanco,territorioBlanco
+   
+   mov bx,8d
+   recursividadY:
+      cmp bx,0d 
+      jle finY
+      mov tempTurno,0d
+      mov cx,1d
+      recursividadX:
+         cmp cx,8d 
+         jg finX
+         
+         mov temp,bx
+         mov temp2,cx 
+
+         mov bx,cx 
+         mov cx,temp
+
+
+         buscarTerritorio bx,cx
+         mov temp5,dl
+         
+         cmp dx,0d
+         je libre
+
+         cmp dx,2d
+         je negro
+
+         cmp dx,3d
+         je blanco
+
+         jmp nada
+
+         libre:
+            cmp tempTurno,0d
+            je todo
+            cmp tempTurno,2d 
+            je territorioNegro
+            cmp tempTurno,3d 
+            je territorioBlanco
+
+            jmp nada
+         
+         negro:
+            cmp tempTurno,0d
+            je territorioNegro
+            cmp tempTurno,2d
+            je territorioNegro
+            cmp tempTurno,3d
+            je todo
+            jmp nada
+
+         blanco:
+            cmp tempTurno,0d
+            je territorioBlanco
+            cmp tempTurno,2d
+            je todo
+            cmp tempTurno,3d
+            je territorioBlanco
+            
+            jmp nada
+
+
+         todo:
+            mov bx,temp 
+            llenarLibre temp2,temp6,temp
+            mov bx,temp 
+            mov cx,temp6
+            inc cx
+            mov tempTurno,0d
+            mov dl,temp5
+            mov tempTurno,dl
+            jmp recursividadX
+
+        
+         territorioNegro:
+            mov bx,temp 
+            llenarNegras temp2,temp6,temp
+            mov bx,temp 
+            mov cx,temp6
+            inc cx
+            mov dl,temp5
+            mov tempTurno,dl
+            jmp recursividadX
+         
+
+         territorioBlanco:
+            mov bx,temp 
+            llenarBlancas temp2,temp6,temp
+            mov bx,temp 
+            mov cx,temp6
+            inc cx
+            mov dl,temp5
+            mov tempTurno,dl
+            jmp recursividadX
+
+
+         nada:
+            mov bx,temp 
+            mov cx,temp2
+            inc cx
+            mov tempTurno,0d
+            jmp recursividadX
+      finX:
+      mov bx,temp
+      dec bx
+      jmp recursividadY
+      
+   finY:
+
+
+endm
+
+;##############################################################################
+;########################## BUSCAR TERRITORIO LIBRE         ###################
+;##############################################################################
+buscarTerritorio macro posX,posY
+   LOCAL recursividad,fin,blanca,fin2
+   mov bx,posX 
+   mov cx,posY 
+   
+   recursividad:
+      cmp bx,8d 
+      jg fin 
+         mov temp3,bx
+         mov temp6,bx 
+         mapeoLexico 
+
+         cmp [tablero + bx],2d 
+         je negra
+         cmp [tablero + bx],3d 
+         je blanca
+
+         mov bx,temp3
+         mov cx,posY
+      inc bx 
+      jmp recursividad
+   
+   negra:
+      mov dx,2d
+      jmp fin2
+
+   blanca: 
+      mov dx,3d 
+      jmp fin2
+
+   fin:
+      mov temp6,9d
+      mov dx,0d
+
+   fin2:
+      xor dh,dh
+endm
+
+;##############################################################################
+;########################## LLENAR TERRITORIO LIBRE        ###################
+;##############################################################################
+llenarLibre macro posXI,posXF,posY
+   LOCAL recursividad,fin
+   mov cx,posY 
+   mov bx,posXI 
+   
+   recursividad:
+      cmp bx,posXF 
+      jge fin
+         mov temp3,bx 
+         mapeoLexico 
+
+         mov [tablero + bx],4d 
+         
+
+         mov bx,temp3 
+         mov cx,posY
+      inc bx
+      jmp recursividad
+
+   fin:
+
+endm
+
+
+;##############################################################################
+;########################## LLENAR TERRITORIO NEGRA        ###################
+;##############################################################################
+llenarNegras macro posXI,posXF,posY
+   LOCAL recursividad,fin
+   mov cx,posY 
+   mov bx,posXI 
+   
+   recursividad:
+      cmp bx,posXF 
+      jge fin
+         mov temp3,bx 
+         mapeoLexico 
+
+         mov [tablero + bx],5d 
+         
+
+         mov bx,temp3 
+         mov cx,posY
+      inc bx
+      jmp recursividad
+
+   fin:
+
+endm
 
 
 
+;##############################################################################
+;########################## LLENAR TERRITORIO BLANCA        ###################
+;##############################################################################
+llenarBlancas macro posXI,posXF,posY
+   LOCAL recursividad,fin
+   mov cx,posY 
+   mov bx,posXI 
+   
+   recursividad:
+      cmp bx,posXF 
+      jge fin
+         mov temp3,bx 
+         mapeoLexico 
 
+         mov [tablero + bx],6d 
+         
+
+         mov bx,temp3 
+         mov cx,posY
+      inc bx
+      jmp recursividad
+
+   fin:
+
+endm
 
 .model small
 .stack
@@ -266,8 +499,7 @@ endm
    ;-------------------------------------------- TABLERO ---------------------------------------------------------------------
       tablero db 70 dup(0)
       turno db ?
-      coorX db ?
-      coorY db ?
+      flagPass db 2 dup(0)
 
    ;------------------------------------------- INSTRUCCIONES ----------------------------------------------------------------
       instruccion db 4 DUP("$")
@@ -294,7 +526,13 @@ endm
       sinFichaHtml db "<div class=",34,"gridSpace",34,">0</div>",10,"$"
       BFichaHtml db "<div class=",34,"gridSpace white",34,">0</div>",10,"$"
       NFichaHtml db "<div class=",34,"gridSpace black",34,">0</div>",10,"$"
-      direccionTablero db "C:\p4\salida\index.html",0
+      circle db "<div class=",34,"circle",34,">0</div>",10,"$"
+      triangle db "<div class=",34,"triangle",34,">0</div>",10,"$"
+      square db "<div class=",34,"square",34,">0</div>",10,"$"
+
+      direccionTablero db "C:\p4\salida\estadoTablero.html",0
+      direccionTablero2 db "C:\p4\salida\reporte2.html",0
+
       showExitoso db "Se creo un html con el estado del tablero",10,"$"
       showFallado db "No se pudo crear el html con el estado del tablero",10,"$"
       h1Html db "<h1>$"
@@ -323,11 +561,9 @@ endm
       temp3 dw ?
       temp4 dw ?
       temp5 db 0
-   ;--------------------------------------- COORDENADAS ---------------------------
-      norte dw ?
-      sur dw ?
-      este dw ?
-      oeste dw ?
+      temp6 dw ?
+      temp7 db 0
+      tempTurno db 0
 .code
  
 inicio:
@@ -342,7 +578,7 @@ inicio:
    ;ingresarCaracter
    ;limpiarTablero 
    mov turno,0d ; Negras Inician 0 -> Negras, 1 -> Blancas
-   mov bl,'1'
+   mov bl,'2'
    mov bh,0d
    ; switch para las opciones
    cmp bl,'1'
@@ -398,6 +634,12 @@ inicio:
          isSave instruccion + 2 ; Si es el comando SAVE
          cmp bx,1d 
          je save
+
+         ;------------------------------------------------------------- COMANDO PASS ------------------------------------------------------
+         xor bx,bx
+         isPass instruccion + 2 
+         cmp bx,1d 
+         je pass 
 
          xor bx,bx 
          isShow instruccion  + 2 
@@ -512,6 +754,31 @@ inicio:
             cerrarArchivo
             jmp jugar
 
+
+
+   ;###################################################### PASS #################################################3
+   pass:
+      cmp flagPass,1d 
+      je finJuego 
+         mov flagPass,1d 
+         cambiarTurno
+         jmp jugar
+
+      finJuego:
+         delimitarTerritorio
+
+         mov ah,3ch 
+         mov cx,00000000b
+         lea dx, [direccionTablero2]
+         int 21h
+         mov filehandle,ax 
+         jnc passE 
+         mostrar showFallado
+         jmp salida
+
+            passE: 
+               hacerReporte2
+               jmp salida
 
 
 end 

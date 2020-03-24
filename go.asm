@@ -107,6 +107,7 @@ endm
 ;########################## CONTROL MOVIMIENTO              ###################
 ;##############################################################################
 controlMovimiento macro posX,posY
+   LOCAL eSuicidio,turnoSuicidioN,saltoSuicidio
    mov bl,posX
    sub bl,16d ; Lo pasamos a numero
    mov bh,0d ; limpimos los bits mas significativos
@@ -152,42 +153,49 @@ controlMovimiento macro posX,posY
       mov bh,0d 
       mov ch,0d
 
+      mov temp8,bx
+      mov temp9,cx 
+
       mapeoLexico
       
-      cmp tablero[bx],2d
+      cmp [tablero + bx],2d
       je eExiste
-      cmp tablero[bx],3d
+      cmp [tablero + bx],3d
       je eExiste
-      
       
       
       
       cmp turno,0d
       je tNegro 
-      mov tablero[bx],3d
+      mov [tablero + bx],3d
       jmp salirTurno 
       
       
 
       tNegro:
       mov [tablero + bx],2d
-      xor bx,bx 
-      mov bx,3d ; Todo bien todo correcto 
+      
       
       jmp salirTurno
 
       eExiste:
-      mostrar exitePosicion
-      xor bx,bx 
-      mov bx,2d ; Error
-      jmp l4
+         mostrar exitePosicion
+         xor bx,bx 
+         mov bx,2d ; Error
+         jmp l4
 
+      
 
       salirTurno:
-      xor ax,ax
-      xor bx,bx
-      xor cx,cx 
-      xor dx,dx
+         
+         
+         ;cmp bx,1d 
+         ;je eSuicidio
+         
+         xor ax,ax
+         xor bx,bx
+         xor cx,cx 
+         xor dx,dx
       
 
    l4:
@@ -529,6 +537,30 @@ obtenerPuntuacion macro
    finY:
 endm
 
+;##############################################################################
+;########################## REINICIAR       ###################
+;##############################################################################
+
+reiniciarJuego macro
+   LOCAL recursividad,fin
+   mov puntuacionBlancas,0d
+   mov puntuacionNegras,0d
+   mov tempTurno,0d
+   mov flagPass,0d
+   xor bx,bx 
+   recursividad:
+   cmp bx,64d
+   jg fin
+
+   mov [tablero + bx],0d
+   inc bx
+   jmp recursividad
+
+
+   fin:
+
+endm
+
 
 .model small
 .stack
@@ -561,6 +593,8 @@ endm
       msgGanadorBlancas db 10,"El ganador son las blancas uwu$"
       msgGanadorNegras db 10,"El ganador son las negras uwu$"
       msgDespedida db 10,"Presione cualquier tecla para salir....$"
+
+      msgSuicidio db 10,"No se puede realizar suicidio...$"
    ;-------------------------------------------- TABLERO ---------------------------------------------------------------------
       tablero db 70 dup(0)
       turno db ?
@@ -631,22 +665,25 @@ endm
       temp5 db 0
       temp6 dw ?
       temp7 db 0
+      temp8 dw ? 
+      temp9 dw ?
       tempTurno db 0
+      tempSuicidio db 0
 .code
  
 inicio:
    mov ax,@data
    mov ds,ax
    mov dx,ax
-   
+   menu:
    ; Mostrar Cabecera
+   mostrarCaracter 10
+   mostrarCaracter 10
    mostrar cabecera
    mostrar opciones
    ; Pedir una opcion
-   ;ingresarCaracter
-   ;limpiarTablero 
+   ingresarCaracter
    mov turno,0d ; Negras Inician 0 -> Negras, 1 -> Blancas
-   mov bl,'2'
    mov bh,0d
    ; switch para las opciones
    cmp bl,'1'
@@ -695,7 +732,7 @@ inicio:
          xor bx,bx
          isExit instruccion + 2 ;Si es el comando salir
          cmp bx,1d
-         je salida
+         je exitLabel
          
          ;-------------------------------------------------------------- COMANDO SAVE -------------------------------------------------------
          xor bx,bx
@@ -723,7 +760,7 @@ inicio:
 
          ; Verificar las capturas
          controlCaptura
-         cambiarTurno
+         prevenirSuicidio
          mov flagPass,0d
          jmp jugar
 
@@ -739,7 +776,7 @@ inicio:
 
       mov ah,3Dh
       xor al,al
-      lea dx,[nombreArchivo + 2]
+      lea dx,[nombreArchivo + 2] 
       int 21h
       jc openError
       
@@ -770,7 +807,7 @@ inicio:
       jmp salida
 
    ;####################################################### EXIT ############################################
-   salida:
+   salida: 
       mostrar despedida
       mov   ax,4c00h       
       int   21h            
@@ -848,7 +885,8 @@ inicio:
             passE: 
                hacerReporte2
                obtenerPuntuacion
-               
+               cerrarArchivo
+
                mostrarCaracter 10
                mostrar msgPuntuacionB
                printNumero puntuacionBlancas
@@ -874,8 +912,11 @@ inicio:
                despedidaLabel:
                   mostrar msgDespedida
                   ingresarCaracter
+                  reiniciarJuego
+               jmp menu
 
-               jmp salida
-
-
+   ;###################################################### EXIT LABEL #################################################
+   exitLabel:
+      reiniciarJuego
+      jmp menu
 end 

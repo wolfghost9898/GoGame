@@ -18,7 +18,7 @@ guardarEstado macro
 
    xor bx,bx
    l21:
-      
+
       cmp bx,64d  ; si es mayor a 16 nos salimos del loop
       jge l22
       mov temp,bx
@@ -67,7 +67,7 @@ cargarEstado macro
       cmp bx,64d
       jge l29
       mov temp,bx
-      mov cl,[SI + bx]
+      mov cl,[SI + bx] 
       xor ch,ch 
       
 

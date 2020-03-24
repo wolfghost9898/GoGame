@@ -2,7 +2,7 @@
 ;########################## CONTROL CAPTURA           ###################
 ;##############################################################################
 controlCaptura macro
-    LOCAL posY,posX,forY,finY,forX,finX,noCapturado,capturarBlanco,capturarNegra,saltarCaptura
+    LOCAL posY,posX,forY,finY,forX,finX,noCapturado,capturarBlanco,capturarNegra,saltarCaptura,mensaje,saltoMensaje
     mov bx,8d
 
     forY:
@@ -45,7 +45,17 @@ controlCaptura macro
                 je noCapturado
                 
                 mov cx,temp2 
-                mov bx,temp 
+                mov bx,temp
+
+                cmp bx,temp9
+                jne saltoMensaje
+                cmp cx,temp8
+                jne saltoMensaje
+
+                mostrar msgSuicidio
+                mov tempSuicidio,1d
+                saltoMensaje:
+
                 mapeoLexico 
                 mov [tablero + bx],0d
 
@@ -415,4 +425,24 @@ buscarLibertadOeste macro tipo
         mov bx,1d 
         jmp salida
     salida:
+endm
+
+
+;##############################################################################
+;########################## SUICIDIO      ###################
+;##############################################################################
+prevenirSuicidio macro tipo 
+    LOCAL sinSuicidio,fin
+    cmp tempSuicidio,0d
+    je sinSuicidio
+
+    mov tempSuicidio,0d
+    jmp fin
+
+
+    sinSuicidio:
+        mov tempSuicidio,0d
+        cambiarTurno
+
+    fin:
 endm

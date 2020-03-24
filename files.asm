@@ -411,7 +411,9 @@ obtenerHora macro
     
 endm
 
-
+;##############################################################################
+;########################## MUESTRA DECENAS Y LAS GUARDA EN UN ARCHIVO ###################
+;##############################################################################
 mostrarDecenas macro numero
    xor ah,ah 
    mov cl,10d 
@@ -422,4 +424,38 @@ mostrarDecenas macro numero
    add day2,48d
    escribirCadenaArchivo day,1
    escribirCadenaArchivo day2,1
+endm
+
+;##############################################################################
+;########################## MUETRA UN NUMERO POR CARACTER ###################
+;##############################################################################
+printNumero macro numero
+   LOCAL decenas,salto
+   cmp numero,10d
+   jge decenas
+   
+   
+   mov bl,numero 
+   add bl,48d
+   mostrarCaracter bl
+   
+   jmp salto
+
+
+
+   decenas:
+      mov al,numero
+      xor ah,ah 
+      mov cl,10d 
+      div cl
+
+      mov bl,al 
+      mov bh,ah 
+
+      add bl,48d 
+      add bh,48d 
+      mostrarCaracter bl 
+      mostrarCaracter bh
+
+   salto:
 endm

@@ -472,6 +472,64 @@ llenarBlancas macro posXI,posXF,posY
 
 endm
 
+;##############################################################################
+;########################## OBTENER PUNTUACION        ###################
+;##############################################################################
+obtenerPuntuacion macro
+   LOCAL recursividadY,finY,finX,recursividadX,negra,blanca,salto
+   
+   mov bx,8d
+   recursividadY:
+      cmp bx,0d 
+      jle finY
+      mov cx,1d
+      recursividadX:
+         cmp cx,8d 
+         jg finX
+         
+         mov temp,bx
+         mov temp2,cx 
+
+         mov bx,cx 
+         mov cx,temp
+
+         mapeoLexico 
+         cmp [tablero + bx],2d
+         je negra 
+         cmp [tablero + bx],5d 
+         je negra 
+         cmp [tablero + bx],3d
+         je blanca
+         cmp [tablero + bx],6d 
+         je blanca 
+
+         jmp salto 
+
+         negra: 
+            inc puntuacionNegras 
+            jmp salto 
+         
+         blanca: 
+            inc puntuacionBlancas
+
+         salto:
+
+
+
+         
+         mov bx,temp 
+         mov cx,temp2
+         inc cx
+         jmp recursividadX
+      finX:
+      mov bx,temp
+      dec bx
+      jmp recursividadY
+      
+   finY:
+endm
+
+
 .model small
 .stack
 .data
@@ -496,10 +554,20 @@ endm
       turnoBlanca db 10,"Turno Blanca: $"
 
       exitePosicion db 10,"Ya existe una ficha en esa posicion",10,"$"
+
+      msgPuntuacionB db 10,"Blancas:$"
+      msgPuntuacionN db 10,"Negras:$"
+
+      msgGanadorBlancas db 10,"El ganador son las blancas uwu$"
+      msgGanadorNegras db 10,"El ganador son las negras uwu$"
+      msgDespedida db 10,"Presione cualquier tecla para salir....$"
    ;-------------------------------------------- TABLERO ---------------------------------------------------------------------
       tablero db 70 dup(0)
       turno db ?
       flagPass db 2 dup(0)
+
+      puntuacionBlancas db 4 dup(0)
+      puntuacionNegras db 4 dup(0)
 
    ;------------------------------------------- INSTRUCCIONES ----------------------------------------------------------------
       instruccion db 4 DUP("$")
@@ -656,6 +724,7 @@ inicio:
          ; Verificar las capturas
          controlCaptura
          cambiarTurno
+         mov flagPass,0d
          jmp jugar
 
 
@@ -778,6 +847,34 @@ inicio:
 
             passE: 
                hacerReporte2
+               obtenerPuntuacion
+               
+               mostrarCaracter 10
+               mostrar msgPuntuacionB
+               printNumero puntuacionBlancas
+               mostrar msgPuntuacionN
+               printNumero puntuacionNegras
+
+               mov bl,puntuacionNegras
+               
+               cmp bl,puntuacionBlancas
+               jg ganadorNegras
+
+               cmp bl,puntuacionBlancas
+               jl ganadorBlancas 
+
+
+               ganadorBlancas:
+                  mostrar msgGanadorBlancas
+                  jmp despedidaLabel
+               
+               ganadorNegras:
+                  mostrar msgGanadorNegras
+
+               despedidaLabel:
+                  mostrar msgDespedida
+                  ingresarCaracter
+
                jmp salida
 
 

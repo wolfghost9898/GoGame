@@ -30,7 +30,6 @@ controlCaptura macro
                 je capturarNegra
                 cmp bx,3d
                 je capturarBlanco
-                capturaEsquina temp,temp2,0d
                 jmp saltarCaptura
                 capturarNegra:
                    capturaEsquina temp,temp2,2d
@@ -44,8 +43,8 @@ controlCaptura macro
                 cmp bx,0d
                 je noCapturado
                 
-                mov cx,temp2 
-                mov bx,temp
+                mov cx,temp 
+                mov bx,temp2
 
                 cmp bx,temp9
                 jne saltoMensaje
@@ -54,8 +53,10 @@ controlCaptura macro
 
                 mostrar msgSuicidio
                 mov tempSuicidio,1d
+                
                 saltoMensaje:
-
+                mov cx,temp2 
+                mov bx,temp
                 mapeoLexico 
                 mov [tablero + bx],0d
 
